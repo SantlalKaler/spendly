@@ -28,6 +28,11 @@
     --radius-sm: 6px;
     --radius-md: 12px;
     --radius-lg: 20px;
+
+    --badge-c: #5b7fa6;
+    --badge-c-light: #e9f0f6;
+    --badge-d: #8b5e83;
+    --badge-d-light: #f6eef4;
 }
 
 /* ------------------------------------------------------------------ */
@@ -561,6 +566,163 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* ------------------------------------------------------------------ */
+/* Profile page                                                        */
+/* ------------------------------------------------------------------ */
+
+.profile-section {
+    padding: 3rem 2rem 5rem;
+}
+
+.profile-container {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.profile-card {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 2rem;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.profile-avatar {
+    flex-shrink: 0;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-name {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    color: var(--ink);
+}
+
+.profile-email {
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+    margin-top: 0.2rem;
+}
+
+.profile-meta {
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+    margin-top: 0.4rem;
+}
+
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+
+.stat-card {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.stat-value {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    color: var(--ink);
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 0.35rem;
+}
+
+.tx-card {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.5rem 2rem;
+    overflow-x: auto;
+}
+
+.card-heading {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--ink);
+    margin-bottom: 1.25rem;
+}
+
+.tx-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.tx-table th {
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.tx-table td {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-soft);
+    color: var(--ink-soft);
+}
+
+.tx-table tbody tr:hover {
+    background: var(--paper-warm);
+}
+
+.tx-table th:last-child,
+.tx-table td:last-child {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+}
+
+.category-badge {
+    display: inline-block;
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.category-badge--a { background: var(--accent-light); color: var(--accent); }
+.category-badge--b { background: var(--accent-2-light); color: var(--accent-2); }
+.category-badge--c { background: var(--badge-c-light); color: var(--badge-c); }
+.category-badge--d { background: var(--badge-d-light); color: var(--badge-d); }
+
+.bar-w-100 { width: 100%; }
+.bar-w-75 { width: 75%; }
+.bar-w-35 { width: 35%; }
+.bar-w-20 { width: 20%; }
+
+/* ------------------------------------------------------------------ */
 /* Responsive                                                          */
 /* ------------------------------------------------------------------ */
 
@@ -575,6 +737,11 @@ a { color: inherit; text-decoration: none; }
     .hero-visual { display: none; }
 
     .features-inner { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 700px) {
+    .stats-row { grid-template-columns: 1fr; }
+    .profile-header { flex-direction: column; text-align: center; }
 }
 
 @media (max-width: 600px) {
