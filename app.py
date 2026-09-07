@@ -64,7 +64,7 @@ def register():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if session.get("user_id"):
-        return redirect(url_for("landing"))
+        return redirect(url_for("profile"))
 
     if request.method == "GET":
         return render_template("login.html")
@@ -81,7 +81,7 @@ def login():
 
     session["user_id"] = user["id"]
     session["user_name"] = user["name"]
-    return redirect(url_for("landing"))
+    return redirect(url_for("profile"))
 
 
 @app.route("/terms")
@@ -107,7 +107,36 @@ def logout():
 
 @app.route("/profile")
 def profile():
-    return "Profile page — coming in Step 4"
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+
+    user = {
+        "name": "Priya Sharma",
+        "email": "priya.sharma@example.com",
+        "member_since": "March 2025",
+    }
+    stats = {"total_spent": 293.24, "expense_count": 5, "top_category": "Bills"}
+    transactions = [
+        {"date": "Sep 5, 2026", "description": "Electricity bill", "category": "Bills", "amount": 120.00},
+        {"date": "Sep 3, 2026", "description": "Groceries", "category": "Food", "amount": 42.50},
+        {"date": "Sep 1, 2026", "description": "Bus pass", "category": "Transport", "amount": 15.00},
+        {"date": "Aug 28, 2026", "description": "Movie tickets", "category": "Entertainment", "amount": 25.75},
+        {"date": "Aug 24, 2026", "description": "New shoes", "category": "Shopping", "amount": 89.99},
+    ]
+    categories = [
+        {"name": "Bills", "amount": 120.00, "width_class": "bar-w-100"},
+        {"name": "Shopping", "amount": 89.99, "width_class": "bar-w-75"},
+        {"name": "Food", "amount": 42.50, "width_class": "bar-w-35"},
+        {"name": "Entertainment", "amount": 25.75, "width_class": "bar-w-20"},
+    ]
+
+    return render_template(
+        "profile.html",
+        user=user,
+        stats=stats,
+        transactions=transactions,
+        categories=categories,
+    )
 
 
 @app.route("/expenses/add")
