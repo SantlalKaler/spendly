@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -105,30 +107,101 @@ def logout():
     return redirect(url_for("login"))
 
 
+def _profile_transactions(user_id):
+    """Subagent 1: recent transaction history for the profile page."""
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT date, description, category, amount FROM expenses "
+        "WHERE user_id = ? ORDER BY date DESC, id DESC LIMIT 10",
+        (user_id,),
+    ).fetchall()
+    conn.close()
+
+    transactions = []
+    for row in rows:
+        d = datetime.strptime(row["date"], "%Y-%m-%d")
+        date_str = f"{d.strftime('%b')} {d.day}, {d.year}"
+        transactions.append(
+            {
+                "date": date_str,
+                "description": row["description"],
+                "category": row["category"],
+                "amount": float(row["amount"]),
+            }
+        )
+    return transactions
+
+
+def _profile_stats(user_id):
+    """Subagent 2: summary stats for the profile page."""
+    conn = get_db()
+    totals_row = conn.execute(
+        "SELECT COALESCE(SUM(amount), 0) AS total, COUNT(*) AS cnt FROM expenses WHERE user_id = ?",
+        (user_id,),
+    ).fetchone()
+    top_row = conn.execute(
+        "SELECT category, SUM(amount) AS total FROM expenses WHERE user_id = ? "
+        "GROUP BY category ORDER BY total DESC, category ASC LIMIT 1",
+        (user_id,),
+    ).fetchone()
+    conn.close()
+
+    top_category = top_row["category"] if top_row is not None else "No expenses yet"
+
+    return {
+        "total_spent": float(totals_row["total"]),
+        "expense_count": int(totals_row["cnt"]),
+        "top_category": top_category,
+    }
+
+
+def _profile_categories(user_id):
+    """Subagent 3: category breakdown for the profile page."""
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT category, SUM(amount) AS total FROM expenses WHERE user_id = ? "
+        "GROUP BY category ORDER BY total DESC",
+        (user_id,),
+    ).fetchall()
+    conn.close()
+
+    if not rows:
+        return []
+
+    max_total = rows[0]["total"]
+    buckets = [100, 75, 35, 20]
+    categories = []
+    for row in rows:
+        pct = (row["total"] / max_total) * 100
+        closest = min(buckets, key=lambda b: abs(b - pct))
+        categories.append(
+            {
+                "name": row["category"],
+                "amount": float(row["total"]),
+                "width_class": f"bar-w-{closest}",
+            }
+        )
+    return categories
+
+
 @app.route("/profile")
 def profile():
     if not session.get("user_id"):
         return redirect(url_for("login"))
 
-    user = {
-        "name": "Priya Sharma",
-        "email": "priya.sharma@example.com",
-        "member_since": "March 2025",
-    }
-    stats = {"total_spent": 293.24, "expense_count": 5, "top_category": "Bills"}
-    transactions = [
-        {"date": "Sep 5, 2026", "description": "Electricity bill", "category": "Bills", "amount": 120.00},
-        {"date": "Sep 3, 2026", "description": "Groceries", "category": "Food", "amount": 42.50},
-        {"date": "Sep 1, 2026", "description": "Bus pass", "category": "Transport", "amount": 15.00},
-        {"date": "Aug 28, 2026", "description": "Movie tickets", "category": "Entertainment", "amount": 25.75},
-        {"date": "Aug 24, 2026", "description": "New shoes", "category": "Shopping", "amount": 89.99},
-    ]
-    categories = [
-        {"name": "Bills", "amount": 120.00, "width_class": "bar-w-100"},
-        {"name": "Shopping", "amount": 89.99, "width_class": "bar-w-75"},
-        {"name": "Food", "amount": 42.50, "width_class": "bar-w-35"},
-        {"name": "Entertainment", "amount": 25.75, "width_class": "bar-w-20"},
-    ]
+    user_id = session["user_id"]
+    conn = get_db()
+    row = conn.execute(
+        "SELECT name, email, created_at FROM users WHERE id = ?", (user_id,)
+    ).fetchone()
+    conn.close()
+
+    member_since = datetime.strptime(row["created_at"], "%Y-%m-%d %H:%M:%S").strftime("%B %Y")
+    user = {"name": row["name"], "email": row["email"], "member_since": member_since}
+
+    stats = _profile_stats(user_id)
+    transactions = _profile_transactions(user_id)
+    categories = _profile_categories(user_id)
 
     return render_template(
         "profile.html",
